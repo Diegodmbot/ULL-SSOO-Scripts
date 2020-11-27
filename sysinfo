@@ -1,0 +1,127 @@
+#!/bin/bash
+
+# sysinfo - Un script que informa del estado del sistema
+
+##### Constantes
+
+TITLE="Información del sistema para $HOSTNAME"
+
+RIGHT_NOW=$(date +"%x %r%Z")
+TIME_STAMP="Actualizada el $RIGHT_NOW por $USER"
+
+
+##### Estilos
+
+TEXT_BOLD=$(tput bold)
+TEXT_GREEN=$(tput setaf 2)
+TEXT_RESET=$(tput sgr0)
+TEXT_ULINE=$(tput sgr 0 1)
+
+##### Funciones
+
+system_info()
+{
+  echo "${TEXT_ULINE}Version del sistema:${TEXT_RESET}"
+    echo
+  uname -a 
+}
+
+
+show_uptime()
+{
+  echo "${TEXT_ULINE}Tiempo de encendido del sistema:$TEXT_RESET"
+    echo
+  uptime
+}
+
+
+drive_space()
+{
+ echo "${TEXT_ULINE}Espacio en el sistema de archivos${TEXT_RESET}"
+   echo
+ df
+}
+
+
+home_space()
+{
+  if [ "$USER" = "root" ]; then
+    echo "${TEXT_ULINE}Espacio en home por usuario:${TEXT_RESET}"
+    echo
+    echo "Bytes Directorio"
+    du -s /home/* | sort -nr
+   fi
+}
+
+
+##### Programa principal
+
+usage()
+{
+   echo "usage: sysinfo [-f file ] [-i] [-h]"
+
+}
+
+write_page()
+
+{
+
+    # El script-here se puede indentar dentro de la función si
+
+    # se usan tabuladores y "<<-EOF" en lugar de "<<".
+cat << _EOF_
+
+$TEXT_BOLD$TITLE$TEXT_RESET
+
+
+$(system_info)
+
+$(show_uptime)
+
+$(drive_space)
+
+$(home_space)
+
+$TEXT_GREEN$TIME_STAMP$TEXT_RESET
+
+_EOF_
+}
+# Opciones por defecto. OJO, lo normal es ponerlas al principio del script, junto a las
+
+# constantes, para que sean fáciles de encontrar y modificar por otros programadores
+
+interactive=
+filename=~/sysinfo.txt
+
+# Procesar la línea de comandos del script para leer las opciones
+while [ "$1" != "" ]; do
+   case $1 in
+       -f | --file )
+
+            shift
+           filename=$1
+           ;;
+       -i | --interactive )
+
+            interactive=1
+
+            ;;
+       -h | --help )
+
+            usage
+           exit
+           ;;
+       * )
+
+            usage
+           exit 1
+   esac
+   shift
+done
+
+
+# Generar el informe del sistema y guardarlo en el archivo indicado
+
+# en $filename
+
+write_page > $filename
